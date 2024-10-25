@@ -1,27 +1,45 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-export default function CreatePage() {
+import { useEffect, useState } from "react";
+import { useNavigate, useParams} from "react-router-dom";
+
+
+export default function UpdatePage() {
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState("");
-  const navigate = useNavigate();
+  const params=useParams();
+  const url =`https://crud-test-c836c-default-rtdb.firebaseio.com/posts/${params.id}.json`;
+const navigate = useNavigate();
 
-  async function handleSubmit(event) {
+  useEffect(() => {
+    async function getPost() {
+    const response = await fetch(url);
+    const postData = await response.json();
+    console.log(postData);
+    setCaption(postData.caption);
+    setImage(postData.image);
+    }
+
+    getPost();
+  }, [url]);
+
+  async function handleSubmit (event) {
     event.preventDefault();
 
-    const post = { caption, image, uid: "ZfPTVEMQKf9vhNiUh0bj" };
+    const postToUpdate ={caption, image};
 
-    const response = await fetch("https://crud-test-c836c-default-rtdb.firebaseio.com/posts.json", {
-      method: "POST",
-      body: JSON.stringify(post)
+    const response = await fetch(url,{
+        method:"PATCH",
+        body: JSON.stringify(postToUpdate)
     });
 
     if (response.ok) {
-      navigate("/");
+        navigate(`/posts/${params.id}`);
+    } else{
+        console.log("Erroe epdating post date");
     }
   }
 
-  return (
-    <section className="page">
+    return(
+        <section className="page" id="update-page">
       <div className="container">
         <form className="form-grid" onSubmit={handleSubmit}>
           <label htmlFor="caption">Caption</label>
@@ -65,5 +83,5 @@ export default function CreatePage() {
         </form>
       </div>
     </section>
-  );
+    )
 }
